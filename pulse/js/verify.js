@@ -1,7 +1,7 @@
 // agent-pulse verify. Run with javascript_tool in the same tab after pressing Enter (no reload in between:
 // it compares against the baseline precheck.js stored in window.__pulseHumans).
 // claude.ai stores the human message only once the reply completes, so this polls for up to 2 minutes.
-// Returns SENT (reply N chars | pending) | NOT-SENT composer="..." | ERROR: ...
+// Returns SENT | NOT-SENT composer="..." | ERROR: ...  (only confirms delivery; never evaluates the reply)
 // Keep MESSAGE in sync with pulse/config.json "message".
 await (async () => {
   const MESSAGE = 'pulse';
@@ -14,10 +14,7 @@ await (async () => {
     if (res.ok) {
       const ms = (await res.json()).chat_messages || [];
       const hs = ms.filter(m => m.sender === 'human');
-      if (hs.length > window.__pulseHumans && tx(hs[hs.length - 1]).trim().toLowerCase() === MESSAGE) {
-        const a = ms[ms.length - 1];
-        return 'SENT (reply ' + (a.sender === 'assistant' ? tx(a).length + ' chars' : 'pending') + ')';
-      }
+      if (hs.length > window.__pulseHumans && tx(hs[hs.length - 1]).trim().toLowerCase() === MESSAGE) return 'SENT';
     }
     await new Promise(r => setTimeout(r, 3000));
   }

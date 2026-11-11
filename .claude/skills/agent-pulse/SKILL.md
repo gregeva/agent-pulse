@@ -14,9 +14,11 @@ Files (paths relative to the repo root):
 - `pulse/config.json`: agents, message, default interval and failure limits. This file is committed.
 - `pulse/js/resolve.js`, `pulse/js/precheck.js`, `pulse/js/verify.js`: the page scripts. Read each file and pass its full text as the `text` of `javascript_tool`, unchanged.
 - `pulse/state.local.json`: runtime state. Git ignores it. It holds conversation URLs (private, so never commit them), tab ids, the cron job id, the current interval, paused flags and failure streaks:
-  `{"cronJobId": "...", "intervalMinutes": 5, "conversations": {"Wick": {"url": "...", "title": "...", "tabId": 123, "paused": false, "notSentStreak": 0, "failedLastStreak": 0}}}`
+  `{"cronJobId": "...", "intervalMinutes": 5, "conversations": {"Wick": {"url": "...", "title": "...", "tabId": 123, "paused": false, "notSentStreak": 0}}}`
 
 ## Rules (each one learned from a real failure)
+
+0. **Your job is to send the pulses, not to evaluate the replies.** An empty reply, or no reply at all, is part of the agents' spec. Never skip, pause, slow down or warn because of what an agent replied. Only report whether the pulse itself was delivered.
 
 1. **Send with real keystrokes only.** Precheck focuses the box. Then use `computer` `type` with the message and `computer` `key` `Enter` on that tab. Never insert text or click Send from JavaScript: that can empty the box without sending, and the text then reappears as a saved draft.
 2. **Verify against claude.ai's stored conversation** with verify.js. "The box is empty" does not mean the message was sent. The pulse only appears in the stored conversation once the reply has finished, so verify.js waits for up to 2 minutes.
@@ -50,11 +52,10 @@ Files (paths relative to the repo root):
 4. **Phase 2.** Run verify.js on every tab where you pressed Enter. These calls can run in parallel.
    - If verify returns `NOT-SENT` and the box still contains the message, run precheck.js again, press `Enter` once, and run verify.js again.
    - Never send more than one pulse per conversation per tick.
-5. Update the streaks in the state file:
-   - `notSentStreak` goes up by 1 on NOT-SENT or ERROR, and resets to 0 on SENT.
-   - `failedLastStreak` goes up by 1 on FAILED-LAST, and resets to 0 on any other result.
-   - If a streak reaches its limit in the config, set `paused: true` and tell the user why. Leave the other conversations running.
-6. Reply with one line, for example: `pulse: Wick SENT (reply 312 chars) · Selvage SKIPPED: user chatting 2.1m ago · Ember SENT · Wren FAILED-LAST`.
+5. Update the state file:
+   - `notSentStreak` goes up by 1 on NOT-SENT or ERROR, and resets to 0 on SENT. SKIPPED leaves it unchanged.
+   - If it reaches `limits.notSentTicks`, set `paused: true` and tell the user. Leave the other conversations running.
+6. Reply with one line, for example: `pulse: Wick SENT · Selvage SKIPPED: user chatting 2.1m ago · Ember SENT · Wren SENT`. Don't comment on the replies.
 
 ## rate <minutes>
 
@@ -74,4 +75,4 @@ Report the cron job's next run time (from `CronList`), the interval, and which c
 
 ## resume <agent>
 
-Set that agent's `paused` to false and both of its streaks to 0. It's included again from the next tick.
+Set that agent's `paused` to false and its `notSentStreak` to 0. It's included again from the next tick.

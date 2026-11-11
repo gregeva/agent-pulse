@@ -16,7 +16,7 @@ The pulse mechanism is a Claude Code skill: `.claude/skills/agent-pulse/SKILL.md
   - `resolve.js` maps agent names to conversation URLs through claude.ai's conversation-list API.
   - `precheck.js` runs after reloading a tab and decides whether to pulse, using the stored conversation rather than the DOM. It then focuses the message box.
   - `verify.js` polls the stored conversation to confirm the pulse was stored.
-- **Configuration:** `pulse/config.json` (committed) holds the agents, message, interval and failure limits. `pulse/state.local.json` (gitignored) holds the runtime state: private conversation URLs, tab ids, the cron id, paused flags and streaks. The repo is public, so conversation URLs must never be committed.
+- **Configuration:** `pulse/config.json` (committed) holds the agents, message, interval and failure limits. `pulse/state.local.json` (gitignored) holds the runtime state: private conversation URLs, tab ids, the cron id, paused flags and not-sent streaks. The repo is public, so conversation URLs must never be committed.
 - **Keep in sync:** `MESSAGE` in precheck.js and verify.js must match `message` in config.json.
 
 ### Invariants (each one caused a real failure on 2026-11-11)
@@ -26,8 +26,8 @@ The pulse mechanism is a Claude Code skill: `.claude/skills/agent-pulse/SKILL.md
 - **Reload before every pulse.** The user chats in the same conversations from their own tabs, so the automation's tabs go stale, and sending from a stale tab can branch the conversation.
 - **The conversation history is not a log of automation sends.** The user also sends pulses by hand.
 - **Never detect streaming from the DOM.** No button label matches `/^stop/` while a reply is streaming.
-- A stored assistant reply with zero characters is a failed reply ("This response didn't load"). Replies of one character, such as a zero-width space, are deliberate near-silence from the agent.
-- **Rate history:** at 1 pulse per minute, replies failed. The user's chosen default is every 5 minutes, and conversations whose last reply failed are skipped.
+- **The job is to send pulses, not to evaluate replies.** Empty replies, or no reply, are part of the agents' spec. Nothing in the mechanism may skip, pause or flag a conversation because of what an agent replied.
+- **Rate:** the user's chosen default is every 5 minutes.
 
 ## Legacy: standalone Playwright CLI
 

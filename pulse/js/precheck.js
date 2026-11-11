@@ -1,6 +1,7 @@
 // agent-pulse precheck. Run with javascript_tool in the conversation's tab right AFTER reloading it.
 // Decides from claude.ai's stored conversation (not the DOM) whether to pulse.
-// Returns READY | READY-LEFTOVER (composer focused, caret at end) | SKIPPED: ... | FAILED-LAST: ... | ERROR: ...
+// Returns READY | READY-LEFTOVER (composer focused, caret at end) | SKIPPED: ... | ERROR: ...
+// It never looks at what the agents reply: empty or absent replies are part of their spec.
 // Keep MESSAGE in sync with pulse/config.json "message".
 await (async () => {
   const MESSAGE = 'pulse';
@@ -18,7 +19,6 @@ await (async () => {
   const ageMin = lastH ? (Date.now() - Date.parse(lastH.created_at)) / 60000 : Infinity;
   window.__pulseHumans = ms.filter(m => m.sender === 'human').length; // baseline for verify.js
   if (last && last.sender === 'human') return 'SKIPPED: awaiting reply';
-  if (last && tx(last).length === 0) return 'FAILED-LAST: last reply empty (did not load)';
   if (lastH && tx(lastH).trim().toLowerCase() !== MESSAGE && ageMin < SKIP_IF_USER_ACTIVE_MIN)
     return `SKIPPED: user chatting ${ageMin.toFixed(1)}m ago`;
   const ed = document.querySelector('[contenteditable="true"][aria-label="Write your prompt to Claude"]');
