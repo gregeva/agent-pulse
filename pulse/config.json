@@ -1,0 +1,9 @@
+{
+  "agents": ["Wick", "Selvage", "Ember", "Wren"],
+  "message": "pulse",
+  "intervalMinutes": 5,
+  "limits": {
+    "notSentTicks": 2,
+    "failedLastTicks": 3
+  }
+}

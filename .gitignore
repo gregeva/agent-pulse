@@ -1,0 +1,9 @@
+.venv/
+# Dedicated Chrome profile: holds the logged-in claude.ai session cookies. Never commit.
+.profile/
+# Screenshots / ARIA snapshots from inspect and pulse runs
+artifacts/
+# agent-pulse runtime state: private conversation URLs, tab ids, cron id
+pulse/*.local.json
+__pycache__/
+*.pyc
