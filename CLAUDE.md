@@ -22,7 +22,7 @@ The pulse mechanism is a Claude Code skill: `.claude/skills/agent-pulse/SKILL.md
 ### Invariants (each one caused a real failure on 2026-11-11)
 
 - **Send with real keystrokes only:** `computer` `type` + `key Enter`. `execCommand('insertText')` and a JavaScript click on Send can empty the message box without sending, and the text later comes back as a saved draft.
-- **"Sent" means `agentPulse.verify` found the pulse in claude.ai's stored conversation.** An empty message box doesn't count. The human message is only stored once the reply finishes, which is why verify.js polls.
+- **"Sent" means `agentPulse.verify` found the pulse in claude.ai's stored conversation.** An empty message box doesn't count. The human message is only stored once the reply finishes, which is why `verify` polls.
 - **Reload before every pulse.** The user chats in the same conversations from their own tabs, so the automation's tabs go stale, and sending from a stale tab can branch the conversation.
 - **The conversation history is not a log of automation sends.** The user also sends pulses by hand.
 - **Never detect streaming from the DOM.** No button label matches `/^stop/` while a reply is streaming.
