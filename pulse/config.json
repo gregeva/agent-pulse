@@ -1,7 +1,12 @@
 {
-  "agents": ["Wick", "Selvage", "Ember", "Wren"],
+  "agents": ["Wick", "Selvage", "Ember", "Wren", "The Conductor"],
   "message": "pulse",
-  "intervalMinutes": 5,
+  "intervals": {
+    "default": 10,
+    "min": 2,
+    "max": 60,
+    "tickMinutes": 2
+  },
   "limits": {
     "notSentTicks": 2
   }
